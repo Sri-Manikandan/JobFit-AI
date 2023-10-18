@@ -54,6 +54,15 @@ def handle_userinput(user_question):
             aimessage = st.chat_message('ai')
             aimessage.write(message.content)
 
+def handle_defaultinput(user_question):
+    response  = st.session_state.conversation({'question':user_question})
+    st.session_state.chat_history = response['chat_history']
+
+    for i, message in enumerate(st.session_state.chat_history):
+        if i%2!=0:
+            aimessage = st.chat_message('ai')
+            aimessage.write(message.content)
+
 def main():
     st.set_page_config(page_title='JobFit AI', page_icon=':robot_face:')
     if "conversation" not in st.session_state:
@@ -78,6 +87,7 @@ def main():
                 vectorstore = get_vectorstore(text_chunks)
 
                 st.session_state.conversation = get_conversation_chain(vectorstore)
+                handle_defaultinput('Suggest best suited job for this resume by providing the two best job options and expected salary in rupees in about 50 words')
 
 if __name__ == '__main__':
     main()
