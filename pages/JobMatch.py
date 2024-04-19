@@ -23,8 +23,8 @@ def get_pdf_text(pdf):
 
 def get_text_chunks(text):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=750,
-        chunk_overlap=50,
+        chunk_size=1500,
+        chunk_overlap=150,
         length_function=len
     )
     chunks = text_splitter.split_text(text)
@@ -52,8 +52,9 @@ def handle_defaultinput(user_question,vectorstore):
     aimessage.write(response['answer'])
 
 def main():
-    st.header('JobFit AI :robot_face:')
-    st.subheader('Job Match Tool helps us to match the resume with the job description')
+    st.header('JobFit Candidate AI :robot_face:')
+    st.subheader('Job Match Tool')
+    st.subheader('Job Match Tool helps us to check if the resume aligns with the job description')
     user_question = st.text_input('Enter the job description:')
     pdf = st.file_uploader('Upload your resume:')
     if st.button('Process'):

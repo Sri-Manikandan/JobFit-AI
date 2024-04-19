@@ -36,7 +36,7 @@ def get_vectorstore(text_chunks):
     return vectorstore
 
 def get_conversation_chain(vectorstore):
-    llm = ChatOpenAI(model="gpt-4")
+    llm = ChatOpenAI(model="gpt-3.5-turbo")
     memory = ConversationBufferMemory(memory_key='chat_history',return_messages=True)
     conversation_chain = ConversationalRetrievalChain.from_llm(
         llm=llm,
@@ -71,7 +71,8 @@ def main():
         st.session_state.conversation = None
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
-    st.header('JobFit AI :robot_face:')
+    st.header('JobFit Candidate AI :robot_face:')
+    st.subheader('Resume Chat')
     st.subheader('JobFit AI is a tool that helps you analyze your job resume in HR perspective based on your skills and interests.')
     user_question = st.text_input('Ask a question about your resume:')
     if user_question:
@@ -89,9 +90,7 @@ def main():
                 vectorstore = get_vectorstore(text_chunks)
 
                 st.session_state.conversation = get_conversation_chain(vectorstore)
-                # handle_defaultinput('Suggest best suited job for this resume by providing the two best job options and expected salary in rupees in about 50 words')
-                handle_defaultinput('You are an experienced Human Resource Manager who is specialized in analyzing the job resumes of the candidate. You have been asked to analyze the resume of a candidate and provide the feedback. Analyze the strength and weakness of the resume and provide the feedback.')
-                # handle_defaultinput('Suugest the missing keywords and skills in the resume to make it more suitable for the job title Data Scientist in about 50 words')
+                handle_defaultinput('Suggest best suited job for this resume by providing the two best job options and expected salary in rupees in about 50 words')
         
         st.divider()
 

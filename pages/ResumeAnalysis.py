@@ -23,8 +23,8 @@ def get_pdf_text(pdf):
 
 def get_text_chunks(text):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=750,
-        chunk_overlap=50,
+        chunk_size=1500,
+        chunk_overlap=150,
         length_function=len
     )
     chunks = text_splitter.split_text(text)
@@ -47,7 +47,8 @@ def get_conversation_chain(vectorstore):
 
 
 def main():
-    st.header('JobFit AI :robot_face:')
+    st.header('JobFit Candidate AI :robot_face:')
+    st.subheader('Resume Analysis Tool')
     st.subheader('Resume Analysis tool helps you to analyze the strength and weakness of your resume.')
     st.subheader('Your Resume')
     pdf = st.file_uploader('Upload your resume:')

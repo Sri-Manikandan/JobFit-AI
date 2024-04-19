@@ -7,10 +7,15 @@ from langchain_community.vectorstores import Chroma
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from PyPDF2 import PdfReader
 from sqlalchemy import Column, Integer, String, create_engine, Table, select, insert, MetaData
-
-
+from langchain.utilities import SQLDatabase
+from langchain.llms import OpenAI
+from langchain.agents import create_sql_agent
+from langchain.agents.agent_toolkits import SQLDatabaseToolkit
+from langchain.agents.agent_types import AgentType
+from menu import menu_with_redirect
 
 st.set_page_config(page_title="Hirer AI", page_icon="🧠")
+menu_with_redirect()
 
 load_dotenv()
 
@@ -56,8 +61,8 @@ def get_pdf_text(pdf):
 
 def get_text_chunks(text):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=750,
-        chunk_overlap=50,
+        chunk_size=1500,
+        chunk_overlap=150,
         length_function=len
     )
     chunks = text_splitter.split_text(text)
@@ -81,17 +86,29 @@ def get_conversation_chain(vectorstore):
 def handle_defaultinput(user_question):
     response  = st.session_state.conversation({'question':user_question})
     st.session_state.chat_history = response['chat_history']
+    st.session_state.answer = response['answer']
 
-    for i, message in enumerate(st.session_state.chat_history):
-        if i%2!=0:
-            st.write(f"AI: {message.content}")
+    # db = SQLDatabase.from_uri("sqlite:///./hirer.db")
+    # llm = OpenAI(temperature=0, verbose=True)
+    # agent_executor = create_sql_agent(
+    #     llm=llm,
+    #     toolkit=SQLDatabaseToolkit(db=db, llm=llm),
+    #     verbose=True,
+    #     agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+    # )
+    # response = agent_executor.run(
+    # "Print the values in the job table where the rating is greater than 80."
+    # )
+    # st.write(response)
 
 def main():
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
-    st.header('JobFit AI :robot_face:')
+    if "answer" not in st.session_state:
+        st.session_state.answer = None
+    st.header('JobFit Recruiter AI :robot_face:')
     st.subheader('JobFit AI is a tool that helps you find the right job for you based on your skills and interests.')
 
     with st.sidebar:
@@ -111,8 +128,9 @@ def main():
 
                     st.session_state.conversation = get_conversation_chain(vectorstore)
 
-                    handle_defaultinput(f'Rate the resumes on a scale of 1 to 100 based on the job specifications: "{job_specification}" and provide feedback on the same in about 50 words')
+                    handle_defaultinput(f'Rate the resume on a scale of 1 to 100 based on the job specifications: "{job_specification}" and provide feedback on the same in about 50 words')
 
-    database()
+    aimessage = st.chat_message('ai')
+    aimessage.write(st.session_state.answer)
 if __name__ == '__main__':
     main()

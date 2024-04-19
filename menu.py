@@ -5,7 +5,7 @@ def authenticated_menu():
         st.session_state.role = None
         st.switch_page("start-page.py")
     if st.session_state.role == "candidate":
-        st.sidebar.page_link("pages/candidate.py", label="Chat with Resume")
+        st.sidebar.page_link("pages/candidate.py", label="Resume Chat")
         st.sidebar.page_link("pages/ResumeAnalysis.py", label="Resume Analysis")
         st.sidebar.page_link("pages/JobMatch.py", label="Job Match")
         st.sidebar.divider()
