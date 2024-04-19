@@ -1,7 +1,7 @@
 import streamlit as st
 from PyPDF2 import PdfReader
 from dotenv import load_dotenv
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain.memory import ConversationBufferMemory
@@ -22,10 +22,9 @@ def get_pdf_text(pdf):
     return text
 
 def get_text_chunks(text):
-    text_splitter = CharacterTextSplitter(
-        separator = "\n",
-        chunk_size=1000,
-        chunk_overlap=150,
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=750,
+        chunk_overlap=50,
         length_function=len
     )
     chunks = text_splitter.split_text(text)
@@ -73,7 +72,7 @@ def main():
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
     st.header('JobFit AI :robot_face:')
-    st.subheader('JobFit AI is a tool that helps you find the right job for you based on your skills and interests.')
+    st.subheader('JobFit AI is a tool that helps you analyze your job resume in HR perspective based on your skills and interests.')
     user_question = st.text_input('Ask a question about your resume:')
     if user_question:
         handle_userinput(user_question)
@@ -91,8 +90,11 @@ def main():
 
                 st.session_state.conversation = get_conversation_chain(vectorstore)
                 # handle_defaultinput('Suggest best suited job for this resume by providing the two best job options and expected salary in rupees in about 50 words')
-                handle_defaultinput('Rate the resume on a scale of 1 to 100 based on the job title Data Scientist and provide feedback on the same in about 50 words')
+                handle_defaultinput('You are an experienced Human Resource Manager who is specialized in analyzing the job resumes of the candidate. You have been asked to analyze the resume of a candidate and provide the feedback. Analyze the strength and weakness of the resume and provide the feedback.')
                 # handle_defaultinput('Suugest the missing keywords and skills in the resume to make it more suitable for the job title Data Scientist in about 50 words')
+        
+        st.divider()
+
 
 if __name__ == '__main__':
     main()
