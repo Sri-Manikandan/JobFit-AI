@@ -6,43 +6,46 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from PyPDF2 import PdfReader
-from sqlalchemy import MetaData
-from langchain.sql_database import SQLDatabase
-from langchain.chains import SQLDatabaseChain
+from sqlalchemy import Column, Integer, String, create_engine, Table, select, insert, MetaData
 
-metadata_obj = MetaData()
-from sqlalchemy import Column,Integer,String,create_engine,Table
-
-job = Table(
-    'job',
-    metadata_obj,
-    Column('id', Integer, primary_key=True),
-    Column('applicant_name', String),
-    Column('rating', String),
-)
-
-engine = create_engine('sqlite:///hirer.db', echo=True)
-metadata_obj.create_all(engine)
-
-observations = [
-    [1,'Sri Manikandan','90'],
-    [2,'Sri Mani','80'],
-]
-
-def insert(obs):
-    stmt = insert(job).values(id=obs[0],applicant_name=obs[1],rating=obs[2])
-    with engine.begin() as conn:
-        conn.execute(stmt)
-
-for obs in observations:
-    insert(obs)
-
-db = SQLDatabase(engine)
 
 
 st.set_page_config(page_title="Hirer AI", page_icon="🧠")
 
 load_dotenv()
+
+def database():
+    metadata_obj = MetaData()
+
+    job = Table(
+        'job',
+        metadata_obj,
+        Column('id', Integer, primary_key=True),
+        Column('applicant_name', String),
+        Column('rating', String),
+    )
+
+    engine = create_engine('sqlite:///./hirer.db', echo=False)
+
+    metadata_obj.create_all(engine)
+
+    observations = [
+        ["Sri Manikandan", "90"],
+        ["Sai Sidharthan", "80"]
+    ]
+    conn = engine.connect()
+    for obj in observations:
+        insert_stmt = insert(job).values(
+            applicant_name=obj[0],
+            rating=obj[1]
+        )
+        conn.execute(insert_stmt)
+
+    select_statement = select(job)
+    result = conn.execute(select_statement)
+    rows = result.fetchall()
+    for row in rows:
+        st.write(row)
 
 def get_pdf_text(pdf):
     text = ""
@@ -94,8 +97,7 @@ def main():
     with st.sidebar:
         st.subheader('Job Specifications')
         job_specification = st.text_area("Enter the job specifications:")
-
-    with st.sidebar:
+        st.divider()
         st.subheader('Your Resumes')
         pdfs = st.file_uploader('Upload resumes:', accept_multiple_files=True)
         if st.button('Process'):
@@ -109,7 +111,8 @@ def main():
 
                     st.session_state.conversation = get_conversation_chain(vectorstore)
 
-                    handle_defaultinput(f'Rate the resume on a scale of 1 to 100 based on the job specifications: "{job_specification}" and provide feedback on the same in about 50 words', applicant_name, core_skills, rating)
+                    handle_defaultinput(f'Rate the resumes on a scale of 1 to 100 based on the job specifications: "{job_specification}" and provide feedback on the same in about 50 words')
 
+    database()
 if __name__ == '__main__':
     main()
