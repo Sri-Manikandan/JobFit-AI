@@ -2,11 +2,15 @@ import streamlit as st
 from PyPDF2 import PdfReader
 from dotenv import load_dotenv
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import FAISS
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
+from menu import menu_with_redirect
+
+st.set_page_config(page_title="Candidate AI", page_icon="🧠")
+menu_with_redirect()
 
 load_dotenv()
 
@@ -29,11 +33,11 @@ def get_text_chunks(text):
 
 def get_vectorstore(text_chunks):
     embeddings = OpenAIEmbeddings()
-    vectorstore = FAISS.from_texts(text_chunks, embedding=embeddings)
+    vectorstore = Chroma.from_texts(text_chunks, embedding=embeddings)
     return vectorstore
 
 def get_conversation_chain(vectorstore):
-    llm = ChatOpenAI()
+    llm = ChatOpenAI(model="gpt-4")
     memory = ConversationBufferMemory(memory_key='chat_history',return_messages=True)
     conversation_chain = ConversationalRetrievalChain.from_llm(
         llm=llm,
@@ -64,7 +68,6 @@ def handle_defaultinput(user_question):
             aimessage.write(message.content)
 
 def main():
-    st.set_page_config(page_title='JobFit AI', page_icon=':robot_face:')
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
     if "chat_history" not in st.session_state:
@@ -87,7 +90,9 @@ def main():
                 vectorstore = get_vectorstore(text_chunks)
 
                 st.session_state.conversation = get_conversation_chain(vectorstore)
-                handle_defaultinput('Suggest best suited job for this resume by providing the two best job options and expected salary in rupees in about 50 words')
+                # handle_defaultinput('Suggest best suited job for this resume by providing the two best job options and expected salary in rupees in about 50 words')
+                handle_defaultinput('Rate the resume on a scale of 1 to 100 based on the job title Data Scientist and provide feedback on the same in about 50 words')
+                # handle_defaultinput('Suugest the missing keywords and skills in the resume to make it more suitable for the job title Data Scientist in about 50 words')
 
 if __name__ == '__main__':
     main()
