@@ -1,7 +1,6 @@
 import streamlit as st
 from dotenv import load_dotenv
-from langchain.chains import ConversationalRetrievalChain
-from langchain.memory import ConversationBufferMemory
+from langchain.chains import RetrievalQA
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
@@ -13,6 +12,11 @@ from langchain.agents import create_sql_agent
 from langchain.agents.agent_toolkits import SQLDatabaseToolkit
 from langchain.agents.agent_types import AgentType
 from menu import menu_with_redirect
+
+from langchain.output_parsers import PydanticOutputParser
+from langchain_core.prompts import PromptTemplate
+from langchain_core.pydantic_v1 import BaseModel, Field
+from langchain.vectorstores import DeepLake
 
 st.set_page_config(page_title="Hirer AI", page_icon="🧠")
 menu_with_redirect()
@@ -34,23 +38,13 @@ def database():
 
     metadata_obj.create_all(engine)
 
-    observations = [
-        ["Sri Manikandan", "90"],
-        ["Sai Sidharthan", "80"]
-    ]
     conn = engine.connect()
-    for obj in observations:
-        insert_stmt = insert(job).values(
-            applicant_name=obj[0],
-            rating=obj[1]
-        )
-        conn.execute(insert_stmt)
 
     select_statement = select(job)
     result = conn.execute(select_statement)
     rows = result.fetchall()
     for row in rows:
-        st.write(row)
+        st.sidebar.write(row)
 
 def get_pdf_text(pdf):
     text = ""
@@ -69,43 +63,60 @@ def get_text_chunks(text):
     return chunks
 
 def get_vectorstore(text_chunks):
-    embeddings = OpenAIEmbeddings()
-    vectorstore = Chroma.from_texts(text_chunks, embedding=embeddings)
+    # vectorstore = Chroma.from_texts(text_chunks, embedding=embeddings)
+    dataset_path = "./my_deeplake/"
+    # vectorstore = DeepLake(dataset_path=dataset_path, embedding=OpenAIEmbeddings(),read_only=True)
+    vectorstore = DeepLake.from_texts(text_chunks,dataset_path=dataset_path, embedding=OpenAIEmbeddings())
     return vectorstore
 
-def get_conversation_chain(vectorstore):
-    llm = ChatOpenAI(model="gpt-4")
-    memory = ConversationBufferMemory(memory_key='chat_history',return_messages=True)
-    conversation_chain = ConversationalRetrievalChain.from_llm(
+def handle_defaultinput(resp):
+    # database()
+    db = SQLDatabase.from_uri("sqlite:///./hirer.db")
+    llm = OpenAI(temperature=0, verbose=True)
+    agent_executor = create_sql_agent(
         llm=llm,
-        memory=memory,
+        toolkit=SQLDatabaseToolkit(db=db, llm=llm),
+        verbose=True,
+        agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+    )
+    agent_executor.run(
+    f"Insert values into job table with applicant_name as '{resp.name}' and rating as '{resp.rating}' and give the answer with the query alone"
+    )
+    DeepLake.force_delete_by_path("./my_deeplake")
+
+
+def get_conversation_chain(vectorstore,user_question):
+    st.session_state.answer = ""
+    llm = ChatOpenAI(model="gpt-3.5-turbo")
+    class Job(BaseModel):
+        name: str = Field(description="applicant's name in the resume")
+        rating: int = Field(description="rating of the candidate's resume")
+
+    parser = PydanticOutputParser(pydantic_object=Job, output_variables=["applicant_name", "rating"])
+    prompt = PromptTemplate(
+        template="Format the context given to u.\n{format_instructions}\n{answer}\n",
+        input_variables=["answer"],
+        partial_variables={"format_instructions": parser.get_format_instructions()},
+    )
+    conversation_chain = RetrievalQA.from_llm(
+        llm=llm,
         retriever=vectorstore.as_retriever(),
     )
-    return conversation_chain
+    chain = prompt | llm | parser
+    response  = conversation_chain.invoke({'query': user_question})
+    resp = chain.invoke({"answer":response['result']})
+    st.session_state.answer = resp
+    if resp.name != None or resp.rating != None:
+        handle_defaultinput(resp)
+    else:
+        resp.name = "Manish"
+        resp.rating = 50
+        handle_defaultinput(resp)
 
-def handle_defaultinput(user_question):
-    response  = st.session_state.conversation({'question':user_question})
-    st.session_state.chat_history = response['chat_history']
-    st.session_state.answer = response['answer']
-
-    # db = SQLDatabase.from_uri("sqlite:///./hirer.db")
-    # llm = OpenAI(temperature=0, verbose=True)
-    # agent_executor = create_sql_agent(
-    #     llm=llm,
-    #     toolkit=SQLDatabaseToolkit(db=db, llm=llm),
-    #     verbose=True,
-    #     agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-    # )
-    # response = agent_executor.run(
-    # "Print the values in the job table where the rating is greater than 80."
-    # )
-    # st.write(response)
 
 def main():
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = None
     if "answer" not in st.session_state:
         st.session_state.answer = None
     st.header('JobFit Recruiter AI :robot_face:')
@@ -126,9 +137,7 @@ def main():
 
                     vectorstore = get_vectorstore(text_chunks)
 
-                    st.session_state.conversation = get_conversation_chain(vectorstore)
-
-                    handle_defaultinput(f'Rate the resume on a scale of 1 to 100 based on the job specifications: "{job_specification}" and provide feedback on the same in about 50 words')
+                    get_conversation_chain(vectorstore,f'Retrieve the applicant Name and Rate the resume on a scale of 1 to 100 based on the job specifications: "{job_specification}", if the resume doesnt match the the required skills for the given job description give a score between 10 and 30 and get the applicant name in the resume and rating of the resume as output.')
 
     aimessage = st.chat_message('ai')
     aimessage.write(st.session_state.answer)
