@@ -13,11 +13,11 @@ def main():
     with col1:
         if st.button("Candidate"):
             st.session_state.role = "candidate"
-            st.switch_page("pages/candidate.py")
+            st.switch_page("pages/Candidate.py")
     with col2:
         if st.button("Recruiter"):
             st.session_state.role = "hirer"
-            st.switch_page("pages/hirer.py")
+            st.switch_page("pages/Recruiter.py")
         
 menu()
 

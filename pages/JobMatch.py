@@ -3,7 +3,7 @@ from PyPDF2 import PdfReader
 from dotenv import load_dotenv
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import DeepLake
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain_openai import ChatOpenAI
@@ -31,25 +31,26 @@ def get_text_chunks(text):
     return chunks
 
 def get_vectorstore(text_chunks):
-    embeddings = OpenAIEmbeddings()
-    vectorstore = Chroma.from_texts(text_chunks, embedding=embeddings)
+    # vectorstore = Chroma.from_texts(text_chunks, embedding=embeddings)
+    dataset_path = "./my_deeplake_candidate/"
+    # vectorstore = DeepLake(dataset_path=dataset_path, embedding=OpenAIEmbeddings(),read_only=True)
+    vectorstore = DeepLake.from_texts(text_chunks,dataset_path=dataset_path, embedding=OpenAIEmbeddings())
     return vectorstore
 
 def get_conversation_chain(vectorstore):
     llm = ChatOpenAI(model="gpt-3.5-turbo")
-    memory = ConversationBufferMemory(memory_key='chat_history',return_messages=True)
     conversation_chain = ConversationalRetrievalChain.from_llm(
         llm=llm,
-        memory=memory,
         retriever=vectorstore.as_retriever(),
     )
     return conversation_chain
 
 def handle_defaultinput(user_question,vectorstore):
     conversation = get_conversation_chain(vectorstore)
-    response  = conversation({'question':user_question})
+    response  = conversation({'question':user_question,"chat_history":""})
     aimessage = st.chat_message('ai')
     aimessage.write(response['answer'])
+    DeepLake.force_delete_by_path("./my_deeplake_candidate")
 
 def main():
     st.header('JobFit Candidate AI :robot_face:')
@@ -64,7 +65,7 @@ def main():
             text_chunks = get_text_chunks(raw_text)
 
             vectorstore = get_vectorstore(text_chunks)
-            prompt = f'''Rate the resume on a scale of 1 to 100 percentage based on the job specifications: "{user_question}" and provide feedback on the same in about 50 words', applicant_name, percentage match, job_description, feedback'''
+            prompt = f'''Rate the resume on a scale of 1 to 100 percentage based on the job specifications: "{user_question}" and provide feedback on the same in about 50 words.'''
             handle_defaultinput(prompt,vectorstore)
     st.divider()
 
