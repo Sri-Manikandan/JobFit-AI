@@ -3,7 +3,7 @@ from PyPDF2 import PdfReader
 from dotenv import load_dotenv
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import DeepLake
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain_openai import ChatOpenAI
@@ -31,8 +31,8 @@ def get_text_chunks(text):
     return chunks
 
 def get_vectorstore(text_chunks):
-    embeddings = OpenAIEmbeddings()
-    vectorstore = Chroma.from_texts(text_chunks, embedding=embeddings)
+    dataset_path = "./my_deeplake_candidate/"
+    vectorstore = DeepLake.from_texts(text_chunks,dataset_path=dataset_path, embedding=OpenAIEmbeddings())
     return vectorstore
 
 def get_conversation_chain(vectorstore):
@@ -73,7 +73,7 @@ def main():
         st.session_state.chat_history = None
     st.header('JobFit Candidate AI :robot_face:')
     st.subheader('Resume Chat')
-    st.subheader('JobFit AI is a tool that helps you analyze your job resume in HR perspective based on your skills and interests.')
+    # st.subheader('JobFit AI is a tool that helps you analyze your job resume in HR perspective based on your skills and interests.')
     user_question = st.text_input('Ask a question about your resume:')
     if user_question:
         handle_userinput(user_question)
@@ -91,7 +91,7 @@ def main():
 
                 st.session_state.conversation = get_conversation_chain(vectorstore)
                 handle_defaultinput('Suggest best suited job for this resume by providing the two best job options and expected salary in rupees in about 50 words')
-        
+                DeepLake.force_delete_by_path("./my_deeplake_candidate")
         st.divider()
 
 

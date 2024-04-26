@@ -3,7 +3,7 @@ from PyPDF2 import PdfReader
 from dotenv import load_dotenv
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import DeepLake
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain_openai import ChatOpenAI
@@ -31,12 +31,12 @@ def get_text_chunks(text):
     return chunks
 
 def get_vectorstore(text_chunks):
-    embeddings = OpenAIEmbeddings()
-    vectorstore = Chroma.from_texts(text_chunks, embedding=embeddings)
+    dataset_path = "./my_deeplake_candidate/"
+    vectorstore = DeepLake.from_texts(text_chunks,dataset_path=dataset_path, embedding=OpenAIEmbeddings())
     return vectorstore
 
 def get_conversation_chain(vectorstore):
-    llm = ChatOpenAI(model="gpt-3.5-turbo")
+    llm = ChatOpenAI(model="gpt-4")
     memory = ConversationBufferMemory(memory_key='chat_history',return_messages=True)
     conversation_chain = ConversationalRetrievalChain.from_llm(
         llm=llm,
@@ -44,12 +44,13 @@ def get_conversation_chain(vectorstore):
         retriever=vectorstore.as_retriever(),
     )
     return conversation_chain
+    
 
 
 def main():
     st.header('JobFit Candidate AI :robot_face:')
     st.subheader('Resume Analysis Tool')
-    st.subheader('Resume Analysis tool helps you to analyze the strength and weakness of your resume.')
+    # st.subheader('Resume Analysis tool helps you to analyze the strength and weakness of your resume.')
     st.subheader('Your Resume')
     pdf = st.file_uploader('Upload your resume:')
     
@@ -66,6 +67,7 @@ def main():
             You have been asked to analyze the resume of a candidate and provide the feedback. Analyze the strength and weakness of the resume and provide the feedback.
             The output should be provided as personal details in 5 points and then provide the strength and weakness of the resume.'''
             response = chain({'question':prompt})
+            DeepLake.force_delete_by_path("./my_deeplake_candidate")
             st.write(response['answer'])
 
 if __name__ == '__main__':

@@ -31,9 +31,7 @@ def get_text_chunks(text):
     return chunks
 
 def get_vectorstore(text_chunks):
-    # vectorstore = Chroma.from_texts(text_chunks, embedding=embeddings)
     dataset_path = "./my_deeplake_candidate/"
-    # vectorstore = DeepLake(dataset_path=dataset_path, embedding=OpenAIEmbeddings(),read_only=True)
     vectorstore = DeepLake.from_texts(text_chunks,dataset_path=dataset_path, embedding=OpenAIEmbeddings())
     return vectorstore
 
@@ -55,7 +53,7 @@ def handle_defaultinput(user_question,vectorstore):
 def main():
     st.header('JobFit Candidate AI :robot_face:')
     st.subheader('Job Match Tool')
-    st.subheader('Job Match Tool helps us to check if the resume aligns with the job description')
+    # st.subheader('Job Match Tool helps us to check if the resume aligns with the job description')
     user_question = st.text_input('Enter the job description:')
     pdf = st.file_uploader('Upload your resume:')
     if st.button('Process'):
