@@ -17,6 +17,7 @@ from langchain.vectorstores import DeepLake
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 import pandas as pd
 
+
 st.set_page_config(page_title="Hirer AI", page_icon="🧠")
 menu_with_redirect()
 load_dotenv()
@@ -138,6 +139,7 @@ def main():
         st.session_state.barchart = None
     st.header('JobFit Recruiter AI :robot_face:')
     st.subheader('Your Resumes')
+
     pdfs = st.file_uploader('Upload resumes:', accept_multiple_files=True)
     with st.sidebar:
         st.subheader('Job Specifications')

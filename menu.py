@@ -11,6 +11,7 @@ def authenticated_menu():
         st.sidebar.divider()
     if st.session_state.role == "hirer":
         st.sidebar.page_link("pages/Recruiter.py", label="Recruiter AI")
+        st.sidebar.page_link("pages/ResumeData.py", label="Resume Database")
         st.sidebar.divider()
 
 def unauthenticated_menu():

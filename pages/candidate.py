@@ -8,6 +8,9 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain_openai import ChatOpenAI
 from menu import menu_with_redirect
+import pymongo
+from pymongo import MongoClient
+import gridfs
 
 st.set_page_config(page_title="Candidate AI", page_icon="🧠")
 menu_with_redirect()
@@ -66,11 +69,30 @@ def handle_defaultinput(user_question):
             aimessage = st.chat_message('ai')
             aimessage.write(message.content)
 
+def download_file(download_loc, db, fs, file_name):
+    data = db['resumes'].files.find_one({"filename": file_name})
+    if data:
+        fs_id = data['_id']
+        out_data = fs.get(fs_id).read()
+
+    with open(download_loc, 'wb') as output:
+        output.write(out_data)
+
+    print("Download Completed!")
+
 def main():
+    # Connect to MongoDB
+    client = MongoClient('mongodb://localhost:27017/')
+    db = client['jobfit']
+    fs = gridfs.GridFS(db,collection='resumes')
+
+    # Initialize session state
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
+
+    # Main page
     st.header('JobFit Candidate AI :robot_face:')
     st.subheader('Resume Chat')
     # st.subheader('JobFit AI is a tool that helps you analyze your job resume in HR perspective based on your skills and interests.')
@@ -83,6 +105,11 @@ def main():
         pdf = st.file_uploader('Upload your resume:')
         if st.button('Process'):
             with st.spinner('Processing...'):
+                if pdf:
+                    file_path = 'D:/Resources/Resume and Cover Letters/' + pdf.name
+                    with open(file_path, 'rb') as file_data:
+                        data = file_data.read()
+                    fs.put(data, filename=pdf.name)
                 raw_text = get_pdf_text(pdf)
 
                 text_chunks = get_text_chunks(raw_text)
@@ -93,6 +120,9 @@ def main():
                 handle_defaultinput('Suggest best suited job for this resume by providing the two best job options and expected salary in rupees in about 50 words')
                 DeepLake.force_delete_by_path("./my_deeplake_candidate")
         st.divider()
+    
+    # if st.button('Download Resume'):
+    #     download_file('D:/Projects/JobFit AI/src/downloads/'+pdf.name, db, fs, pdf.name)
 
 
 if __name__ == '__main__':

@@ -8,6 +8,9 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain_openai import ChatOpenAI
 from menu import menu_with_redirect
+import pymongo
+from pymongo import MongoClient
+import gridfs
 
 st.set_page_config(page_title="Resume Analysis", page_icon="🧠")
 menu_with_redirect()
@@ -48,6 +51,11 @@ def get_conversation_chain(vectorstore):
 
 
 def main():
+    # Connect to MongoDB
+    client = MongoClient('mongodb://localhost:27017/')
+    db = client['jobfit']
+    fs = gridfs.GridFS(db,collection='resumes')
+
     st.header('JobFit Candidate AI :robot_face:')
     st.subheader('Resume Analysis Tool')
     # st.subheader('Resume Analysis tool helps you to analyze the strength and weakness of your resume.')
@@ -56,6 +64,11 @@ def main():
     
     if st.button('Process'):
         with st.spinner('Processing...'):
+            if pdf:
+                file_path = 'D:/Resources/Resume and Cover Letters/' + pdf.name
+                with open(file_path, 'rb') as file_data:
+                    data = file_data.read()
+                fs.put(data, filename=pdf.name)
             raw_text = get_pdf_text(pdf)
 
             text_chunks = get_text_chunks(raw_text)

@@ -3,4 +3,5 @@
 __pycache__/
 
 .env
-hirer.db
+*.sqlite3
+*.db

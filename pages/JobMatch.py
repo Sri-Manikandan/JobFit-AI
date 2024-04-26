@@ -8,6 +8,9 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain_openai import ChatOpenAI
 from menu import menu_with_redirect
+import pymongo
+from pymongo import MongoClient
+import gridfs
 
 st.set_page_config(page_title="Candidate AI", page_icon="🧠")
 menu_with_redirect()
@@ -51,6 +54,11 @@ def handle_defaultinput(user_question,vectorstore):
     DeepLake.force_delete_by_path("./my_deeplake_candidate")
 
 def main():
+    # Connect to MongoDB
+    client = MongoClient('mongodb://localhost:27017/')
+    db = client['jobfit']
+    fs = gridfs.GridFS(db,collection='resumes')
+
     st.header('JobFit Candidate AI :robot_face:')
     st.subheader('Job Match Tool')
     # st.subheader('Job Match Tool helps us to check if the resume aligns with the job description')
@@ -58,6 +66,12 @@ def main():
     pdf = st.file_uploader('Upload your resume:')
     if st.button('Process'):
         with st.spinner('Processing...'):
+            if pdf:
+                file_path = 'D:/Resources/Resume and Cover Letters/' + pdf.name
+                with open(file_path, 'rb') as file_data:
+                    data = file_data.read()
+                fs.put(data, filename=pdf.name)
+
             raw_text = get_pdf_text(pdf)
 
             text_chunks = get_text_chunks(raw_text)
