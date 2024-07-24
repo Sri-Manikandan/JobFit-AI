@@ -14,6 +14,22 @@ import gridfs
 
 st.set_page_config(page_title="Resume Analysis", page_icon="🧠")
 menu_with_redirect()
+Page_style=""""
+<style>
+    [data-testid="stAppViewContainer"]{
+        background-image:url("https://i.pinimg.com/736x/91/38/a8/9138a8c07d2e20ce6067904fd825b989.jpg");
+        background-size:cover;
+    }
+    [data-testid="stHeader"] {
+    background-color:rgba(0,0,0,0);
+    }
+    [data-testid="stSidebarContent"]{
+        background-image:url("https://i.pinimg.com/736x/91/38/a8/9138a8c07d2e20ce6067904fd825b989.jpg");
+        background-size:cover;
+    }
+</style>
+"""
+st.markdown(Page_style,unsafe_allow_html=True)
 
 load_dotenv()
 
@@ -64,11 +80,6 @@ def main():
     
     if st.button('Process'):
         with st.spinner('Processing...'):
-            if pdf:
-                file_path = 'D:/Resources/Resume and Cover Letters/' + pdf.name
-                with open(file_path, 'rb') as file_data:
-                    data = file_data.read()
-                fs.put(data, filename=pdf.name)
             raw_text = get_pdf_text(pdf)
 
             text_chunks = get_text_chunks(raw_text)

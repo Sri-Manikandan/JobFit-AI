@@ -8,12 +8,27 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain_openai import ChatOpenAI
 from menu import menu_with_redirect
-import pymongo
 from pymongo import MongoClient
 import gridfs
 
 st.set_page_config(page_title="Candidate AI", page_icon="🧠")
 menu_with_redirect()
+Page_style=""""
+<style>
+    [data-testid="stApp"]{
+        background-image:url("https://i.pinimg.com/736x/91/38/a8/9138a8c07d2e20ce6067904fd825b989.jpg");
+        background-size:cover;
+    }
+    [data-testid="stHeader"] {
+    background-color:rgba(0,0,0,0);
+    }
+    [data-testid="stSidebarContent"]{
+        background-image:url("https://i.pinimg.com/736x/91/38/a8/9138a8c07d2e20ce6067904fd825b989.jpg");
+        background-size:cover;
+    }
+</style>
+"""
+st.markdown(Page_style,unsafe_allow_html=True)
 
 load_dotenv()
 
@@ -67,7 +82,7 @@ def main():
     if st.button('Process'):
         with st.spinner('Processing...'):
             if pdf:
-                file_path = 'D:/Resources/Resume and Cover Letters/' + pdf.name
+                file_path = 'E:/New folder/downloads/' + pdf.name
                 with open(file_path, 'rb') as file_data:
                     data = file_data.read()
                 fs.put(data, filename=pdf.name)

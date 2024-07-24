@@ -1,5 +1,5 @@
 import streamlit as st
-
+from streamlit_option_menu import option_menu
 def authenticated_menu():
     if st.sidebar.button("Switch Accounts"):
         st.session_state.role = None
@@ -9,6 +9,7 @@ def authenticated_menu():
         st.sidebar.page_link("pages/ResumeAnalysis.py", label="Resume Analysis")
         st.sidebar.page_link("pages/JobMatch.py", label="Job Match")
         st.sidebar.divider()
+        orientation="horizontal"
     if st.session_state.role == "hirer":
         st.sidebar.page_link("pages/Recruiter.py", label="Recruiter AI")
         st.sidebar.page_link("pages/ResumeData.py", label="Resume Database")
