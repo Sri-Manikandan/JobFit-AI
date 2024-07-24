@@ -5,7 +5,7 @@ from menu import menu
 st.set_page_config(page_title="JobFit AI", page_icon="🧠", layout="centered")
 if 'role' not in st.session_state:
     st.session_state.role = None
-Page_style=""""
+Page_style="""
 <style>
     [data-testid="stAppViewContainer"]{
         background-image:url("https://i.pinimg.com/736x/91/38/a8/9138a8c07d2e20ce6067904fd825b989.jpg");
@@ -17,6 +17,9 @@ Page_style=""""
     [data-testid="stSidebarContent"]{
         background-image:url("https://i.pinimg.com/736x/91/38/a8/9138a8c07d2e20ce6067904fd825b989.jpg");
         background-size:cover;
+    }
+    [data-testid="baseButton-header"]{
+        color:transparent;
     }
 </style>
 """
