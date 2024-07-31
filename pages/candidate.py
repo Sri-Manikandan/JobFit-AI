@@ -1,6 +1,5 @@
 import streamlit as st
 from PyPDF2 import PdfReader
-from dotenv import load_dotenv
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import DeepLake
@@ -13,6 +12,7 @@ import gridfs
 
 st.set_page_config(page_title="Candidate AI", page_icon="🧠")
 menu_with_redirect()
+api_key = st.secrets["openai"]["OPENAI_API_KEY"]
 
 Page_style="""
 <style>
@@ -34,9 +34,6 @@ Page_style="""
 """
 st.markdown(Page_style,unsafe_allow_html=True)
 
-
-load_dotenv()
-
 def get_pdf_text(pdf):
     text = ""
     pdfReader = PdfReader(pdf)
@@ -55,11 +52,11 @@ def get_text_chunks(text):
 
 def get_vectorstore(text_chunks):
     dataset_path = "./my_deeplake_candidate/"
-    vectorstore = DeepLake.from_texts(text_chunks,dataset_path=dataset_path, embedding=OpenAIEmbeddings())
+    vectorstore = DeepLake.from_texts(text_chunks,dataset_path=dataset_path, embedding=OpenAIEmbeddings(api_key=api_key))
     return vectorstore
 
 def get_conversation_chain(vectorstore):
-    llm = ChatOpenAI(model="gpt-4o")
+    llm = ChatOpenAI(model="gpt-4o", api_key=api_key)
     memory = ConversationBufferMemory(memory_key='chat_history',return_messages=True)
     conversation_chain = ConversationalRetrievalChain.from_llm(
         llm=llm,

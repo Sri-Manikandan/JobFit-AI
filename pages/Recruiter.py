@@ -40,7 +40,7 @@ Page_style="""
 """
 st.markdown(Page_style,unsafe_allow_html=True)
 
-load_dotenv()
+api_key = st.secrets["openai"]["OPENAI_API_KEY"]
 
 def create_database():
     metadata_obj = MetaData()
@@ -75,7 +75,7 @@ def get_text_chunks(text):
 
 def get_vectorstore(text_chunks):
     dataset_path = "./my_deeplake/"
-    vectorstore = DeepLake.from_texts(text_chunks,dataset_path=dataset_path, embedding=OpenAIEmbeddings())
+    vectorstore = DeepLake.from_texts(text_chunks,dataset_path=dataset_path, embedding=OpenAIEmbeddings(api_key=api_key))
     return vectorstore
 
 def handle_defaultinput(resp):
@@ -94,7 +94,7 @@ def handle_defaultinput(resp):
 
 def get_conversation_chain(vectorstore,user_question):
     st.session_state.answer = ""
-    llm = ChatOpenAI(model="gpt-4o")
+    llm = ChatOpenAI(model="gpt-4o",api_key=api_key)
     class Job(BaseModel):
         name: str = Field(description="applicant's name in the resume")
         rating: int = Field(description="rating of the candidate's resume")

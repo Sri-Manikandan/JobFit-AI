@@ -34,7 +34,7 @@ Page_style="""
 """
 st.markdown(Page_style,unsafe_allow_html=True)
 
-load_dotenv()
+api_key = st.secrets["openai"]["OPENAI_API_KEY"]
 
 def get_pdf_text(pdf):
     text = ""
@@ -58,7 +58,7 @@ def get_vectorstore(text_chunks):
     return vectorstore
 
 def get_conversation_chain(vectorstore):
-    llm = ChatOpenAI(model="gpt-4o")
+    llm = ChatOpenAI(model="gpt-4o",api_key=api_key)
     memory = ConversationBufferMemory(memory_key='chat_history',return_messages=True)
     conversation_chain = ConversationalRetrievalChain.from_llm(
         llm=llm,
