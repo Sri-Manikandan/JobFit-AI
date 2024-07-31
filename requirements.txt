@@ -13,7 +13,7 @@ boto3==1.34.88
 botocore==1.34.88
 build==1.2.1
 cachetools==5.3.1
-certifi==2023.7.22
+certifi==2024.7.4
 charset-normalizer==3.3.0
 chroma-hnswlib==0.7.3
 clarifai==9.9.2
