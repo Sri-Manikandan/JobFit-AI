@@ -57,7 +57,7 @@ def get_vectorstore(text_chunks):
     return vectorstore
 
 def get_conversation_chain(vectorstore):
-    llm = ChatOpenAI(model="gpt-3.5-turbo")
+    llm = ChatOpenAI(model="gpt-4o")
     conversation_chain = ConversationalRetrievalChain.from_llm(
         llm=llm,
         retriever=vectorstore.as_retriever(),
@@ -84,12 +84,6 @@ def main():
     pdf = st.file_uploader('Upload your resume:')
     if st.button('Process'):
         with st.spinner('Processing...'):
-            if pdf:
-                file_path = 'E:/New folder/downloads/' + pdf.name
-                with open(file_path, 'rb') as file_data:
-                    data = file_data.read()
-                fs.put(data, filename=pdf.name)
-
             raw_text = get_pdf_text(pdf)
 
             text_chunks = get_text_chunks(raw_text)

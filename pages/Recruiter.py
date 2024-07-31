@@ -94,7 +94,7 @@ def handle_defaultinput(resp):
 
 def get_conversation_chain(vectorstore,user_question):
     st.session_state.answer = ""
-    llm = ChatOpenAI(model="gpt-3.5-turbo")
+    llm = ChatOpenAI(model="gpt-4o")
     class Job(BaseModel):
         name: str = Field(description="applicant's name in the resume")
         rating: int = Field(description="rating of the candidate's resume")
