@@ -241,7 +241,7 @@ soupsieve==2.5
 SQLAlchemy==2.0.30
 sqlparse==0.5.0
 stack-data==0.6.3
-starlette==0.14.2
+starlette==0.36.2
 streamlit==1.36.0
 streamlit-option-menu==0.3.13
 sympy==1.12
