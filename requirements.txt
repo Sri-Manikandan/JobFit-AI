@@ -56,7 +56,7 @@ dnspython==2.6.1
 dulwich==0.21.7
 email_validator==2.1.1
 executing==2.0.1
-fastapi==0.65.1
+fastapi==0.109.1
 fastapi-cli==0.0.2
 fastjsonschema==2.19.1
 filelock==3.14.0
