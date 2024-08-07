@@ -51,7 +51,7 @@ Deprecated==1.2.14
 dill==0.3.8
 distlib==0.3.8
 distro==1.9.0
-Django==5.0.6
+Django==5.0.8
 dnspython==2.6.1
 dulwich==0.21.7
 email_validator==2.1.1
