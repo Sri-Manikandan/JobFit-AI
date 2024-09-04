@@ -39,7 +39,7 @@ comm==0.2.2
 constantly==23.10.4
 contourpy==1.2.1
 crashtest==0.4.1
-cryptography==42.0.7
+cryptography==43.0.1
 cycler==0.12.1
 daphne==3.0.2
 dataclasses-json==0.6.5
